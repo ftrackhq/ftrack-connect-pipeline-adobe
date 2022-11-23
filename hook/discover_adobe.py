@@ -33,6 +33,8 @@ def on_discover_pipeline_adobe(session, event):
 def on_launch_pipeline_adobe(session, event):
     '''Handle application launch and add environment to *event*.'''
 
+    logger.warning("on_launch_pipeline_adobe")
+
     pipeline_adobe_base_data = on_discover_pipeline_adobe(session, event)
     adobe_plugins_path = os.path.join(plugin_base_dir, 'resource', 'plug_ins')
     adobe_script_path = os.path.join(plugin_base_dir, 'resource', 'scripts')
@@ -42,7 +44,7 @@ def on_launch_pipeline_adobe(session, event):
     plugin_hook = os.path.join(definitions_plugin_hook, 'adobe', 'python')
 
     import uuid
-    adobe_id = uuid.uuid4()
+    adobe_id = '1234'#uuid.uuid4()
 
     pipeline_adobe_base_data['integration']['env'] = {
         'FTRACK_EVENT_PLUGIN_PATH.prepend': plugin_hook,
@@ -67,8 +69,10 @@ def on_launch_pipeline_adobe(session, event):
             )
         ).first()  # Make sure updated custom attributes are fetched
 
-    cmd = 'python -c ./source/ftrack-connect-pipeline-adobe/resource/scripts/bootstrap.py {}'.format(adobe_id)
-    subprocess.Popen(cmd)
+    cmd = 'python "{}/bootstrap.py" {}'.format(adobe_script_path, adobe_id)
+    os.system(cmd)
+
+    #subprocess.Popen(cmd)
 
     return pipeline_adobe_base_data
 
@@ -78,13 +82,15 @@ def register(session):
     if not isinstance(session, ftrack_api.session.Session):
         return
 
+    logger.warning("Discovering adobe")
+
     handle_discovery_event = functools.partial(
         on_discover_pipeline_adobe, session
     )
 
     session.event_hub.subscribe(
         'topic=ftrack.connect.application.discover and '
-        'data.application.identifier=adobe*'
+        'data.application.identifier=photoshop*'
         ' and data.application.version >= 2021',
         handle_discovery_event,
         priority=40,
@@ -94,7 +100,7 @@ def register(session):
 
     session.event_hub.subscribe(
         'topic=ftrack.connect.application.launch and '
-        'data.application.identifier=adobe*'
+        'data.application.identifier=photoshop*'
         ' and data.application.version >= 2021',
         handle_launch_event,
         priority=40,

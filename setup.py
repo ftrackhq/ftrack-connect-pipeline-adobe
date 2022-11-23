@@ -108,7 +108,7 @@ __version__ = {version!r}
 
 # Configuration.
 setup(
-    name=ftrack-connect-pipeline-adobe,
+    name='ftrack-connect-pipeline-adobe',
     description='Adobe plugin enabling publish, open, load and asset management with ftrack eco system.',
     long_description=open(README_PATH).read(),
     keywords='ftrack',

@@ -378,7 +378,7 @@ class AdobeAssetManagerEngine(AssetManagerEngine):
         )
         self.dcc_object = dcc_object
 
-        if options.get('clear_selection'):
+        #if options.get('clear_selection'):
             # cmds.select(cl=True)
 
         # nodes = cmds.listConnections(

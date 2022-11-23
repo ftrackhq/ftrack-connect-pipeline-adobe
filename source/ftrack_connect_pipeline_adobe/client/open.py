@@ -17,7 +17,7 @@ class AdobeQtOpenerClientWidget(open.QtOpenerClientWidget):
         qt_constants.UI_TYPE,
         adobe_constants.UI_TYPE,
     ]
-    definition_extensions_filter = ['.mb',  .. ]
+    # definition_extensions_filter = ['.mb',  .. ]
 
     def __init__(self, event_manager, parent=None):
         super(AdobeQtOpenerClientWidget, self).__init__(event_manager)

@@ -2,6 +2,7 @@
 # :copyright: Copyright (c) 2014-2022 ftrack
 
 import os
+import subprocess
 import sys
 import ftrack_api
 import logging
@@ -32,46 +33,44 @@ def on_discover_pipeline_adobe(session, event):
 def on_launch_pipeline_adobe(session, event):
     '''Handle application launch and add environment to *event*.'''
 
-    #pipeline_maya_base_data = on_discover_pipeline_maya(session, event)
-    #maya_plugins_path = os.path.join(plugin_base_dir, 'resource', 'plug_ins')
-    #maya_script_path = os.path.join(plugin_base_dir, 'resource', 'scripts')
+    pipeline_adobe_base_data = on_discover_pipeline_adobe(session, event)
+    adobe_plugins_path = os.path.join(plugin_base_dir, 'resource', 'plug_ins')
+    adobe_script_path = os.path.join(plugin_base_dir, 'resource', 'scripts')
 
     # Discover plugins from definitions
     definitions_plugin_hook = os.getenv("FTRACK_DEFINITION_PLUGIN_PATH")
     plugin_hook = os.path.join(definitions_plugin_hook, 'adobe', 'python')
 
-    # pipeline_maya_base_data['integration']['env'] = {
-    #     'FTRACK_EVENT_PLUGIN_PATH.prepend': plugin_hook,
-    #     'PYTHONPATH.prepend': os.path.pathsep.join(
-    #         [python_dependencies, maya_script_path]
-    #     ),
-    #     'MAYA_SCRIPT_PATH': maya_script_path,
-    #     'MAYA_PLUG_IN_PATH.prepend': maya_plugins_path,
-    # }
+    import uuid
+    adobe_id = uuid.uuid4()
+
+    pipeline_adobe_base_data['integration']['env'] = {
+        'FTRACK_EVENT_PLUGIN_PATH.prepend': plugin_hook,
+        'PYTHONPATH.prepend': os.path.pathsep.join(
+            [python_dependencies, adobe_script_path]
+        ),
+        'MAYA_SCRIPT_PATH': adobe_script_path,
+        'FTRACK_ADOBE_SESSION_ID': adobe_id,
+        'MAYA_PLUG_IN_PATH.prepend': adobe_plugins_path,
+    }
 
     selection = event['data'].get('context', {}).get('selection', [])
 
     if selection:
         task = session.get('Context', selection[0]['entityId'])
-        # pipeline_maya_base_data['integration']['env'][
-        #     'FTRACK_CONTEXTID.set'
-        # ] = task['id']
+        pipeline_adobe_base_data['integration']['env'][
+            'FTRACK_CONTEXTID.set'
+        ] = task['id']
         parent = session.query(
             'select custom_attributes from Context where id={}'.format(
                 task['parent']['id']
             )
         ).first()  # Make sure updated custom attributes are fetched
-        # pipeline_maya_base_data['integration']['env']['FS.set'] = parent[
-        #     'custom_attributes'
-        # ].get('fstart', '1.0')
-        # pipeline_maya_base_data['integration']['env']['FE.set'] = parent[
-        #     'custom_attributes'
-        # ].get('fend', '100.0')
-        # pipeline_maya_base_data['integration']['env']['FPS.set'] = parent[
-        #     'custom_attributes'
-        # ].get('fps', '24.0')
 
-    #return pipeline_maya_base_data
+    cmd = 'python -c ./source/ftrack-connect-pipeline-adobe/resource/scripts/bootstrap.py {}'.format(adobe_id)
+    subprocess.Popen(cmd)
+
+    return pipeline_adobe_base_data
 
 
 def register(session):

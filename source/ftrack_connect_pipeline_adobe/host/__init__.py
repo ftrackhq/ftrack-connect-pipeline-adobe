@@ -37,12 +37,25 @@ class AdobeHost(Host):
         runnerResult = super(AdobeHost, self).run(event)
         return runnerResult
 
-    def remote_events_listener(self, remote_event_manager):
+    def remote_events_listener(self, remote_event_manager, adobe_id):
+        # remote_event_manager.subscribe(
+        #     'topic=ftrack.pipeline.host.run and data.pipeline.app_id={}'.format(
+        #         adobe_id
+        #     ),
+        #     # TODO: we can call run or something like emit remote run, which emits a qt signal
+        #     self.run,
+        # )
+
         remote_event_manager.subscribe(
-            'ftrack.pipeline.host.run and data.pipeline.app_id={}'.format(
+            'topic=ftrack.pipeline.client.launch and data.pipeline.app_id={}'.format(
                 adobe_id
             ),
-            # TODO: we can call run or something like emit remote run, which emits a qt signal
-            self.run,
+            self.remote_launch_client_coverter,
         )
+
+    def remote_launch_client_coverter(self, event):
+        name = event['data']['pipeline']['name']
+        source = event['data']['pipeline']['source']
+        self.launch_client(name, source)
+
 

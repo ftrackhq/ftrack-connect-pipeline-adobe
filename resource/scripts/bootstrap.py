@@ -229,7 +229,7 @@ def initialise(adobe_id):
     )
 
     remote_event_manager = adobe_utils.init_adobe(adobe_id)
-    host.remote_events_listener(remote_event_manager)
+    host.remote_events_listener(remote_event_manager, adobe_id)
 
 def __main__():
     adobe_id = sys.argv[1]

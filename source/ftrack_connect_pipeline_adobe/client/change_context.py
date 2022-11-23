@@ -16,4 +16,5 @@ class AdobeQtChangeContextClientWidget(
 
     def show(self):
         if super(AdobeQtChangeContextClientWidget, self).show():
-            init_adobe(self.context_id, self.session)
+            # TODO: review this one, shouldn't call the init
+            adobe_utils.init_adobe(self.context_id, self.session)

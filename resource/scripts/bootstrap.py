@@ -3,13 +3,12 @@
 
 # Example DCC bootstrap script based on Maya userSetup.py
 
+import sys
 import logging
 import functools
 
-# import maya.cmds as cmds
-# import maya.mel as mm
-
 import ftrack_api
+from Qt import QtWidgets
 
 from ftrack_connect_pipeline import constants as core_constants
 from ftrack_connect_pipeline.configure_logging import configure_logging
@@ -55,6 +54,7 @@ created_widgets = dict()
 
 def get_ftrack_menu(menu_name='ftrack', submenu_name=None):
     '''Get the current ftrack menu, create it if does not exists.'''
+    # TODO: We will send and event to photoshop to return the ftrack menu
     # gMainWindow = mm.eval('$temp1=$gMainWindow')
     #
     # if cmds.menu(menu_name, exists=True, parent=gMainWindow, label=menu_name):
@@ -65,7 +65,7 @@ def get_ftrack_menu(menu_name='ftrack', submenu_name=None):
     #         menu_name, parent=gMainWindow, tearOff=True, label=menu_name
     #     )
 
-    if submenu_name:
+    # if submenu_name:
         # if cmds.menuItem(
         #     submenu_name, exists=True, parent=menu, label=submenu_name
         # ):
@@ -74,14 +74,19 @@ def get_ftrack_menu(menu_name='ftrack', submenu_name=None):
         #     submenu = cmds.menuItem(
         #         submenu_name, subMenu=True, label=submenu_name, parent=menu
         #     )
-        return submenu
-    else:
-        return menu
+    #     return submenu
+    # else:
+    #     return menu
+    pass
 
 
 def _open_widget(event_manager, asset_list_model, widgets, event):
     '''Open Adobe widget based on widget name in *event*, and create if not already
     exists'''
+
+    # Init QApplication
+    app = QtWidgets.QApplication()
+
     widget_name = None
     widget_class = None
     for (_widget_name, _widget_class, unused_label, unused_image) in widgets:
@@ -125,16 +130,14 @@ def _open_widget(event_manager, asset_list_model, widgets, event):
         widget.show()
         widget.raise_()
         widget.activateWindow()
+        sys.exit(app.exec_())
     else:
         raise Exception(
             'Unknown widget {}!'.format(event['data']['pipeline']['name'])
         )
 
 
-def initialise():
-    # TODO : later we need to bring back here all the adobe initialisations
-    #  from ftrack-connect-adobe
-    # such as frame start / end etc....
+def initialise(adobe_id):
 
     logger.debug('Setting up the menu')
     session = ftrack_api.Session(auto_connect_event_hub=False)
@@ -145,8 +148,6 @@ def initialise():
 
     host = adobe_host.AdobeHost(event_manager)
 
-    cmds.loadPlugin('ftrackAdobePlugin.py', quiet=True)
-
     # Shared asset manager model
     asset_list_model = AssetListModel(event_manager)
 
@@ -156,7 +157,6 @@ def initialise():
             core_constants.OPENER,
             ftrack_open.AdobeQtOpenerClientWidget,
             'Open',
-            'fileOpen',
         )
     )
     widgets.append(
@@ -164,23 +164,20 @@ def initialise():
             qt_constants.ASSEMBLER_WIDGET,
             load.AdobeQtAssemblerClientWidget,
             'Assembler',
-            'greasePencilImport',
         )
     )
     widgets.append(
         (
             core_constants.ASSET_MANAGER,
-            asset_manager.AdobeQtAssetManagerClientWidgetMixin,
+            asset_manager.AdobeQtAssetManagerClientWidget,
             'Asset Manager',
-            'volumeCube',
         )
     )
     widgets.append(
         (
             core_constants.PUBLISHER,
-            publish.AdobeQtPublisherClientWidgetMixin,
+            publish.AdobeQtPublisherClientWidget,
             'Publisher',
-            'greasePencilExport',
         )
     )
     widgets.append(
@@ -188,7 +185,6 @@ def initialise():
             qt_constants.CHANGE_CONTEXT_WIDGET,
             change_context.AdobeQtChangeContextClientWidget,
             'Change context',
-            'refresh',
         )
     )
     widgets.append(
@@ -196,7 +192,6 @@ def initialise():
             core_constants.LOG_VIEWER,
             log_viewer.AdobeQtLogViewerClientWidget,
             'Log Viewer',
-            'zoom',
         )
     )
     widgets.append(
@@ -204,13 +199,12 @@ def initialise():
             qt_constants.DOCUMENTATION_WIDGET,
             documentation.QtDocumentationClientWidget,
             'Documentation',
-            'SP_FileIcon',
         )
     )
 
     ftrack_menu = get_ftrack_menu()
     # Register and hook the dialog in ftrack menu
-    for item in widgets:
+    # for item in widgets:
         # if item == 'divider':
         #     cmds.menuItem(divider=True)
         #     continue
@@ -234,9 +228,9 @@ def initialise():
         ),
     )
 
-    adobe_utils.init_adobe()
+    remote_event_manager = adobe_utils.init_adobe(adobe_id)
+    host.remote_events_listener(remote_event_manager)
 
-    # host.launch_client(qt_constants.OPENER_WIDGET)
-
-
-# cmds.evalDeferred('initialise()', lp=True)
+def __main__():
+    adobe_id = sys.argv[1]
+    initialise(adobe_id)

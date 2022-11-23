@@ -384,32 +384,32 @@ class AdobeAssetManagerEngine(AssetManagerEngine):
         # nodes = cmds.listConnections(
         #    '{}.{}'.format(self.dcc_object.name, asset_const.ASSET_LINK)
         # )
-        for node in nodes:
-            try:
-                #.select(node, add=True)
-                result.append(str(node))
-                status = core_constants.SUCCESS_STATUS
-            except Exception as error:
-                message = str(
-                    'Could not select the node {}, error: {}'.format(
-                        str(node), error
-                    )
-                )
-                self.logger.error(message)
-                status = core_constants.ERROR_STATUS
-
-            bool_status = core_constants.status_bool_mapping[status]
-            if not bool_status:
-                end_time = time.time()
-                total_time = end_time - start_time
-
-                result_data['status'] = status
-                result_data['result'] = result
-                result_data['execution_time'] = total_time
-                result_data['message'] = result['message'] = message
-
-                self._notify_client(plugin, result_data)
-                return status, result
+        # for node in nodes:
+        #     try:
+        #         #.select(node, add=True)
+        #         result.append(str(node))
+        #         status = core_constants.SUCCESS_STATUS
+        #     except Exception as error:
+        #         message = str(
+        #             'Could not select the node {}, error: {}'.format(
+        #                 str(node), error
+        #             )
+        #         )
+        #         self.logger.error(message)
+        #         status = core_constants.ERROR_STATUS
+        #
+        #     bool_status = core_constants.status_bool_mapping[status]
+        #     if not bool_status:
+        #         end_time = time.time()
+        #         total_time = end_time - start_time
+        #
+        #         result_data['status'] = status
+        #         result_data['result'] = result
+        #         result_data['execution_time'] = total_time
+        #         result_data['message'] = result['message'] = message
+        #
+        #         self._notify_client(plugin, result_data)
+        #         return status, result
 
         end_time = time.time()
         total_time = end_time - start_time
@@ -487,11 +487,11 @@ class AdobeAssetManagerEngine(AssetManagerEngine):
             # or []
         )
 
-        for node in nodes:
-            if cmds.nodeType(node) == 'reference':
-                reference_node = adobe_utils.getReferenceNode(node)
-                if reference_node:
-                    break
+        # for node in nodes:
+        #     if cmds.nodeType(node) == 'reference':
+        #         reference_node = adobe_utils.getReferenceNode(node)
+        #         if reference_node:
+        #             break
 
         # Load asset with the main method, the reference has not been created yet.
         if not reference_node:
@@ -570,11 +570,11 @@ class AdobeAssetManagerEngine(AssetManagerEngine):
         if self.dcc_object.name in nodes:
             nodes.remove(self.dcc_object.name)
 
-        for node in nodes:
-            if cmds.nodeType(node) == 'reference':
-                reference_node = adobe_utils.getReferenceNode(node)
-                if reference_node:
-                    break
+        # for node in nodes:
+        #     if cmds.nodeType(node) == 'reference':
+        #         reference_node = adobe_utils.getReferenceNode(node)
+        #         if reference_node:
+        #             break
 
         if reference_node:
             self.logger.debug("Removing reference: {}".format(reference_node))

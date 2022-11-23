@@ -8,6 +8,9 @@ from ftrack_connect_pipeline.utils import (
 )
 from ftrack_connect_pipeline_adobe.constants import asset as asset_const
 
+import ftrack_api
+from ftrack_connect_pipeline import host, constants, event
+
 logger = logging.getLogger(__name__)
 
 
@@ -28,7 +31,7 @@ def run_in_main_thread(f):
     return decorated
 
 
-def init_adobe(context_id=None, session=None):
+def init_adobe(adobe_id, context_id=None, session=None):
     '''
     Initialise timeline in Adobe based on shot/asset build settings.
 
@@ -37,7 +40,12 @@ def init_adobe(context_id=None, session=None):
     :param session: The session required to query from *context_id*.
     :return:
     '''
-    pass
+    # Create a session and Event Manager
+    session = ftrack_api.Session(auto_connect_event_hub=False)
+    remote_event_manager = event.EventManager(
+        session=session, mode=constants.REMOTE_EVENT_MODE
+    )
+    return remote_event_manager
 
 
 def get_main_window():

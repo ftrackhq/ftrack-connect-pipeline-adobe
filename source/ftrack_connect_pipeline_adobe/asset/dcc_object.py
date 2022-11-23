@@ -13,7 +13,7 @@ from ftrack_connect_pipeline_adobe.utils import custom_commands as adobe_utils
 class AdobeDccObject(DccObject):
     '''AdobeDccObject class.'''
 
-    ftrack_plugin_id = asset_const.FTRACK_PLUGIN_ID
+    #ftrack_plugin_id = asset_const.FTRACK_PLUGIN_ID
     '''Plugin id used on some DCC applications '''
 
     def __init__(self, name=None, from_id=None, **kwargs):
@@ -63,16 +63,17 @@ class AdobeDccObject(DccObject):
         '''
         Creates a new dcc_object with the given *name* if doesn't exists.
         '''
-        if self._name_exists(name):
-            error_message = "{} already exists in the scene".format(name)
-            self.logger.error(error_message)
-            raise RuntimeError(error_message)
-
-        #dcc_object_node = cmds.createNode(asset_const.FTRACK_PLUGIN_TYPE, name=name)
-
-        self.logger.debug('Creating new dcc object {}'.format(dcc_object_node))
-        self.name = dcc_object_node
-        return self.name
+        pass
+        # if self._name_exists(name):
+        #     error_message = "{} already exists in the scene".format(name)
+        #     self.logger.error(error_message)
+        #     raise RuntimeError(error_message)
+        #
+        # #dcc_object_node = cmds.createNode(asset_const.FTRACK_PLUGIN_TYPE, name=name)
+        #
+        # self.logger.debug('Creating new dcc object {}'.format(dcc_object_node))
+        # self.name = dcc_object_node
+        # return self.name
 
     def _name_exists(self, name):
         '''
@@ -89,26 +90,27 @@ class AdobeDccObject(DccObject):
         Checks adobe scene to get all the ftrackAssetNode objects. Compares them
         with the given *asset_info_id* and returns them if matches.
         '''
-        ftrack_asset_nodes = adobe_utils.get_ftrack_nodes()
-        for dcc_object_name in ftrack_asset_nodes:
-
-            # id_value = cmds.getAttr(
-            #     '{}.{}'.format(dcc_object_name, asset_const.ASSET_INFO_ID)
-            # )
-
-            if id_value == asset_info_id:
-                self.logger.debug(
-                    'Found existing object: {}'.format(dcc_object_name)
-                )
-                self.name = dcc_object_name
-                return self.name
-
-        self.logger.debug(
-            "Couldn't found an existing object for the asset info id: {}".format(
-                asset_info_id
-            )
-        )
-        return None
+        pass
+        # ftrack_asset_nodes = adobe_utils.get_ftrack_nodes()
+        # for dcc_object_name in ftrack_asset_nodes:
+        #
+        #     # id_value = cmds.getAttr(
+        #     #     '{}.{}'.format(dcc_object_name, asset_const.ASSET_INFO_ID)
+        #     # )
+        #
+        #     if id_value == asset_info_id:
+        #         self.logger.debug(
+        #             'Found existing object: {}'.format(dcc_object_name)
+        #         )
+        #         self.name = dcc_object_name
+        #         return self.name
+        #
+        # self.logger.debug(
+        #     "Couldn't found an existing object for the asset info id: {}".format(
+        #         asset_info_id
+        #     )
+        # )
+        # return None
 
     @staticmethod
     def dictionary_from_object(object_name):
@@ -119,21 +121,22 @@ class AdobeDccObject(DccObject):
 
         *object_name* ftrackAssetNode object type from adobe scene.
         '''
-        logger = logging.getLogger(
-            '{0}.{1}'.format(__name__, __class__.__name__)
-        )
-        param_dict = {}
-        #if not cmds.objExists(object_name):
-        #    error_message = "{} Object doesn't exists".format(object_name)
-        #    logger.error(error_message)
-        #    return param_dict
-        #all_attr = cmds.listAttr(object_name, c=True, se=True)
-        for attr in all_attr:
-            #if cmds.attributeQuery(attr, node=object_name, msg=True):
-            #    continue
-            #attr_value = cmds.getAttr('{}.{}'.format(object_name, attr))
-            param_dict[attr] = attr_value
-        return param_dict
+        pass
+        # logger = logging.getLogger(
+        #     '{0}.{1}'.format(__name__, __class__.__name__)
+        # )
+        # param_dict = {}
+        # #if not cmds.objExists(object_name):
+        # #    error_message = "{} Object doesn't exists".format(object_name)
+        # #    logger.error(error_message)
+        # #    return param_dict
+        # #all_attr = cmds.listAttr(object_name, c=True, se=True)
+        # for attr in all_attr:
+        #     #if cmds.attributeQuery(attr, node=object_name, msg=True):
+        #     #    continue
+        #     #attr_value = cmds.getAttr('{}.{}'.format(object_name, attr))
+        #     param_dict[attr] = attr_value
+        # return param_dict
 
     def connect_objects(self, objects):
         '''
@@ -142,7 +145,8 @@ class AdobeDccObject(DccObject):
 
         *objects* List of Adobe DAG objects
         '''
-        for obj in objects:
+        pass
+        # for obj in objects:
             # if cmds.lockNode(obj, q=True)[0]:
             #     cmds.lockNode(obj, l=False)
             #

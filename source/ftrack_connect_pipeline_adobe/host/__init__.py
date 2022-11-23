@@ -36,3 +36,13 @@ class AdobeHost(Host):
     def run(self, event):
         runnerResult = super(AdobeHost, self).run(event)
         return runnerResult
+
+    def remote_events_listener(self, remote_event_manager):
+        remote_event_manager.subscribe(
+            'ftrack.pipeline.host.run and data.pipeline.app_id={}'.format(
+                adobe_id
+            ),
+            # TODO: we can call run or something like emit remote run, which emits a qt signal
+            self.run,
+        )
+

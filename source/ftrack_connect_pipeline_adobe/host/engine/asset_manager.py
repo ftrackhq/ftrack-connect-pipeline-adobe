@@ -2,9 +2,6 @@
 # :copyright: Copyright (c) 2014-2022 ftrack
 
 import time
-import adobe
-
-#import maya.cmds as cmds
 
 from ftrack_connect_pipeline import constants as core_constants
 from ftrack_connect_pipeline.host.engine import AssetManagerEngine

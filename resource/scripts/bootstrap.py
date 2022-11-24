@@ -2,10 +2,11 @@
 # :copyright: Copyright (c) 2014-2022 ftrack
 
 # Example DCC bootstrap script based on Maya userSetup.py
-
+import os
 import sys
 import logging
 import functools
+import atexit
 
 import ftrack_api
 from Qt import QtWidgets
@@ -30,24 +31,16 @@ from ftrack_connect_pipeline_qt.client import documentation
 
 from ftrack_connect_pipeline_adobe.utils import custom_commands as adobe_utils
 
-
-extra_handlers = {
-    'adobe': {
-        'class': 'adobe.utils.AdobeGuiLogHandler',
-        'level': 'INFO',
-        'formatter': 'file',
-    }
-}
 configure_logging(
     'ftrack_connect_pipeline_adobe',
     extra_modules=['ftrack_connect_pipeline', 'ftrack_connect_pipeline_qt'],
-    extra_handlers=extra_handlers,
     propagate=False,
 )
 
 
 logger = logging.getLogger('ftrack_connect_pipeline_adobe')
 
+logger.info('Initializing Adobe Framework POC')
 
 created_widgets = dict()
 
@@ -231,6 +224,17 @@ def initialise(adobe_id):
     remote_event_manager = adobe_utils.init_adobe(adobe_id)
     host.remote_events_listener(remote_event_manager, adobe_id)
 
-def __main__():
-    adobe_id = sys.argv[1]
+
+def on_exit():
+    logger.info('Adobe pipeline exit')
+
+atexit.register(on_exit)
+
+adobe_id = os.environ['FTRACK_ADOBE_SESSION_ID']
+
+try:
     initialise(adobe_id)
+except:
+    import traceback
+    logger.warning(traceback.format_exc())
+

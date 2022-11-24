@@ -2,6 +2,7 @@
 # :copyright: Copyright (c) 2014-2022 ftrack
 import threading
 from functools import wraps
+import logging
 
 from ftrack_connect_pipeline.utils import (
     get_save_path,
@@ -41,7 +42,7 @@ def init_adobe(adobe_id, context_id=None, session=None):
     :return:
     '''
     # Create a session and Event Manager
-    session = ftrack_api.Session(auto_connect_event_hub=False)
+    session = ftrack_api.Session(auto_connect_event_hub=True)
     remote_event_manager = event.EventManager(
         session=session, mode=constants.REMOTE_EVENT_MODE
     )

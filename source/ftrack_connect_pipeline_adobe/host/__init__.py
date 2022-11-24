@@ -45,15 +45,18 @@ class AdobeHost(Host):
         #     # TODO: we can call run or something like emit remote run, which emits a qt signal
         #     self.run,
         # )
+        logger.info('Registering remote event listener (id: {})'.format(adobe_id))
 
         remote_event_manager.subscribe(
-            'topic=ftrack.pipeline.client.launch and data.pipeline.app_id={}'.format(
+            'ftrack.pipeline.client.launch and data.pipeline.app_id={}'.format(
                 adobe_id
             ),
-            self.remote_launch_client_coverter,
+            self.remote_launch_client_converter,
         )
 
-    def remote_launch_client_coverter(self, event):
+    def remote_launch_client_converter(self, event):
+        logger.info('remote_launch_client_converter({})'.format(event))
+        print('remote_launch_client_converter({})'.format(event))
         name = event['data']['pipeline']['name']
         source = event['data']['pipeline']['source']
         self.launch_client(name, source)

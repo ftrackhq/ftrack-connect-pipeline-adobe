@@ -9,7 +9,7 @@ import functools
 import atexit
 
 import ftrack_api
-from Qt import QtWidgets
+from Qt import QtWidgets, QtCore
 
 from ftrack_connect_pipeline import constants as core_constants
 from ftrack_connect_pipeline.configure_logging import configure_logging
@@ -42,7 +42,72 @@ logger = logging.getLogger('ftrack_connect_pipeline_adobe')
 
 logger.info('Initializing Adobe Framework POC')
 
-created_widgets = dict()
+class StandaloneApplication(QtWidgets.QApplication):
+
+    openClient = QtCore.Signal(object, object, object, object)
+
+    created_widgets = dict()
+
+    def __init__(self, *args, **kwargs):
+        super(StandaloneApplication, self).__init__(*args, **kwargs)
+        self.openClient.connect(self._open_widget)
+
+
+    def _open_widget(self, event_manager, asset_list_model, widgets, event):
+        '''Open Adobe widget based on widget name in *event*, and create if not already
+        exists'''
+
+        widget_name = None
+        widget_class = None
+        for (_widget_name, _widget_class, unused_label) in widgets:
+            if _widget_name == event['data']['pipeline']['name']:
+                widget_name = _widget_name
+                widget_class = _widget_class
+                break
+        if widget_name:
+            ftrack_client = widget_class
+            widget = None
+            if widget_name in self.created_widgets:
+                widget = self.created_widgets[widget_name]
+                # Is it still visible?
+                is_valid_and_visible = False
+                try:
+                    if widget is not None and widget.isVisible():
+                        is_valid_and_visible = True
+                except:
+                    pass
+                finally:
+                    if not is_valid_and_visible:
+                        del self.created_widgets[widget_name]  # Not active any more
+                        if widget:
+                            try:
+                                widget.deleteLater()  # Make sure it is deleted
+                            except:
+                                pass
+                            widget = None
+            if widget is None:
+                # Need to create
+                if widget_name in [
+                    qt_constants.ASSEMBLER_WIDGET,
+                    core_constants.ASSET_MANAGER,
+                ]:
+                    # Create with asset model
+                    widget = ftrack_client(event_manager, asset_list_model)
+                else:
+                    # Create without asset model
+                    widget = ftrack_client(event_manager)
+                self.created_widgets[widget_name] = widget
+            widget.show()
+            widget.raise_()
+            widget.activateWindow()
+        else:
+            raise Exception(
+                'Unknown widget {}!'.format(event['data']['pipeline']['name'])
+            )
+
+
+# Init QApplication
+app = StandaloneApplication()
 
 
 def get_ftrack_menu(menu_name='ftrack', submenu_name=None):
@@ -73,61 +138,8 @@ def get_ftrack_menu(menu_name='ftrack', submenu_name=None):
     pass
 
 
-def _open_widget(event_manager, asset_list_model, widgets, event):
-    '''Open Adobe widget based on widget name in *event*, and create if not already
-    exists'''
-
-    # Init QApplication
-    app = QtWidgets.QApplication()
-
-    widget_name = None
-    widget_class = None
-    for (_widget_name, _widget_class, unused_label, unused_image) in widgets:
-        if _widget_name == event['data']['pipeline']['name']:
-            widget_name = _widget_name
-            widget_class = _widget_class
-            break
-    if widget_name:
-        ftrack_client = widget_class
-        widget = None
-        if widget_name in created_widgets:
-            widget = created_widgets[widget_name]
-            # Is it still visible?
-            is_valid_and_visible = False
-            try:
-                if widget is not None and widget.isVisible():
-                    is_valid_and_visible = True
-            except:
-                pass
-            finally:
-                if not is_valid_and_visible:
-                    del created_widgets[widget_name]  # Not active any more
-                    if widget:
-                        try:
-                            widget.deleteLater()  # Make sure it is deleted
-                        except:
-                            pass
-                        widget = None
-        if widget is None:
-            # Need to create
-            if widget_name in [
-                qt_constants.ASSEMBLER_WIDGET,
-                core_constants.ASSET_MANAGER,
-            ]:
-                # Create with asset model
-                widget = ftrack_client(event_manager, asset_list_model)
-            else:
-                # Create without asset model
-                widget = ftrack_client(event_manager)
-            created_widgets[widget_name] = widget
-        widget.show()
-        widget.raise_()
-        widget.activateWindow()
-        sys.exit(app.exec_())
-    else:
-        raise Exception(
-            'Unknown widget {}!'.format(event['data']['pipeline']['name'])
-        )
+def _open_widget_async(event_manager, asset_list_model, widgets, event):
+    app.openClient.emit(event_manager, asset_list_model, widgets, event)
 
 
 def initialise(adobe_id):
@@ -217,7 +229,7 @@ def initialise(adobe_id):
             core_constants.PIPELINE_CLIENT_LAUNCH, host.host_id
         ),
         functools.partial(
-            _open_widget, event_manager, asset_list_model, widgets
+            _open_widget_async, event_manager, asset_list_model, widgets
         ),
     )
 
@@ -238,3 +250,5 @@ except:
     import traceback
     logger.warning(traceback.format_exc())
 
+# Run until it's closed
+sys.exit(app.exec_())
